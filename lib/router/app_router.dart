@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:web_app/features/auth/screens/login_screen.dart';
 import 'package:web_app/features/auth/screens/signup_screen.dart';
+import 'package:web_app/features/auth/screens/user_profile_screen.dart';
+import 'package:web_app/features/chat/screens/chat_screen.dart';
 import 'package:web_app/features/home/screens/home_screen.dart';
 import 'package:web_app/features/platform_channels/platfrom_channels.dart';
 import 'package:web_app/features/secure_web_view/common_webview.dart';
@@ -29,6 +31,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.signup,
         builder: (context, state) => SignupScreen(),
       ),
+    GoRoute(
+      path: RouteNames.chat,
+      builder: (context, state) => ChatScreen(),
+    ),
+    GoRoute(
+      path: RouteNames.userProfile,
+      builder: (context, state) => UserProfileScreen(),
+    ),
     ],
   );
 });

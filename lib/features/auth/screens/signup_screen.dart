@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:web_app/features/auth/controllers/auth_controller.dart';
 import 'package:web_app/features/auth/repo/auth_repo.dart';
 import 'package:web_app/router/route_names.dart';
 
@@ -17,6 +18,21 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final TextEditingController nameController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    ref.listen(authControllerProvider, (previous, next) {
+      if (next == AuthState.authenticated) {
+        context.push(RouteNames.chat);
+      } else if (next == AuthState.error) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error signing up')));
+      } else if (next == AuthState.loading) {
+        showDialog(
+          context: context,
+          builder: (context) =>
+              Center(child: CircularProgressIndicator(color: Colors.white)),
+        );
+      }
+    });
     return Scaffold(
       appBar: AppBar(title: Text('Signup')),
       body: Padding(
@@ -46,10 +62,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 child: Text('Already have an account? Login'),
               ),
               ElevatedButton(
-                onPressed: () {
-                  ref
-                      .read(authRepoProvider)
-                      .signup(
+                onPressed: () async {
+                  await ref
+                      .read(authControllerProvider.notifier)
+                      .signUp(
                         name: nameController.text,
                         email: emailController.text,
                         password: passwordController.text,
