@@ -1,19 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:web_app/features/auth/controllers/auth_controller.dart';
 import 'package:web_app/router/route_names.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    ref.listen(authControllerProvider, (previous, next) {
+      if (next == AuthState.authenticated) {
+        context.go(RouteNames.chat);
+      } else if (next == AuthState.error) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error logging in')));
+      } else if (next == AuthState.loading) {
+        showDialog(
+          context: context,
+          builder: (context) =>
+              Center(child: CircularProgressIndicator(color: Colors.white)),
+        );
+      }
+    });
     return Scaffold(
       appBar: AppBar(title: Text('Login')),
       body: Center(
@@ -38,7 +55,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 child: Text('New User? Signup'),
               ),
-              ElevatedButton(onPressed: () {}, child: Text('Login')),
+              ElevatedButton(
+                onPressed: () {
+                  ref
+                      .read(authControllerProvider.notifier)
+                      .login(
+                        email: emailController.text,
+                        password: passwordController.text,
+                      );
+                },
+                child: Text('Login'),
+              ),
             ],
           ),
         ),

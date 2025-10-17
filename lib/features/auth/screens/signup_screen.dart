@@ -20,7 +20,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Widget build(BuildContext context) {
     ref.listen(authControllerProvider, (previous, next) {
       if (next == AuthState.authenticated) {
-        context.push(RouteNames.chat);
+        context.go(RouteNames.chat);
       } else if (next == AuthState.error) {
         ScaffoldMessenger.of(
           context,

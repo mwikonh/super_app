@@ -42,6 +42,28 @@ class AuthController extends StateNotifier<AuthState> {
       throw Future.error(e);
     }
   }
+
+  Future login({required String email, required String password}) async {
+    state = AuthState.loading;
+    try {
+      final User? user = await ref
+          .read(authRepoProvider)
+          .login(email: email, password: password);
+      if (user != null) {
+        final UsersData usersData = await ref
+            .read(authRepoProvider)
+            .getUsersDataFromFirebase(uid: user.uid);
+        ref.read(userDataStateProvider.notifier).update((state) => usersData);
+        state = AuthState.authenticated;
+      } else {
+        state = AuthState.error;
+        throw Future.error(Exception('User not found'));
+      }
+    } catch (e) {
+      state = AuthState.error;
+      throw Future.error(e);
+    }
+  }
 }
 
 final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(

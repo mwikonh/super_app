@@ -30,12 +30,42 @@ class AuthRepo {
     }
   }
 
+  Future<User?> login({required String email, required String password}) async {
+    try {
+      final UserCredential userCred = await _firebaseAuth
+          .signInWithEmailAndPassword(email: email, password: password);
+      if (userCred.user != null) {
+        return userCred.user;
+      } else {
+        throw Exception('User not found');
+      }
+    } catch (e) {
+      log(e.toString());
+      throw Future.error(e);
+    }
+  }
+
   Future<void> saveUsersDatatoDatabase({required UsersData usersData}) async {
     try {
       await _firebaseFirestore
           .collection('users')
           .doc(usersData.uid)
           .set(usersData.toJson());
+    } catch (e) {
+      log(e.toString());
+      throw Future.error(e);
+    }
+  }
+
+  Future<UsersData> getUsersDataFromFirebase({required String uid}) async {
+    try {
+      final DocumentSnapshot<Map<String, dynamic>> userData =
+          await _firebaseFirestore.collection('users').doc(uid).get();
+      if (userData.exists) {
+        return UsersData.fromJson(userData.data()!);
+      } else {
+        throw Exception('User not found');
+      }
     } catch (e) {
       log(e.toString());
       throw Future.error(e);
