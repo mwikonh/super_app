@@ -4,6 +4,7 @@ part 'message_model.g.dart';
 
 @JsonSerializable()
 class MessageModel {
+  final String? senderName;
   final String message;
   final String senderId;
   final String messageType;
@@ -11,6 +12,7 @@ class MessageModel {
   final String messageUrl;
 
   MessageModel({
+    this.senderName,
     required this.message,
     required this.senderId,
     required this.messageType,

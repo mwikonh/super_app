@@ -7,6 +7,7 @@ part of 'message_model.dart';
 // **************************************************************************
 
 MessageModel _$MessageModelFromJson(Map<String, dynamic> json) => MessageModel(
+  senderName: json['senderName'] as String?,
   message: json['message'] as String,
   senderId: json['senderId'] as String,
   messageType: json['messageType'] as String,
@@ -16,6 +17,7 @@ MessageModel _$MessageModelFromJson(Map<String, dynamic> json) => MessageModel(
 
 Map<String, dynamic> _$MessageModelToJson(MessageModel instance) =>
     <String, dynamic>{
+      'senderName': instance.senderName,
       'message': instance.message,
       'senderId': instance.senderId,
       'messageType': instance.messageType,

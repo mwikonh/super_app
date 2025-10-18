@@ -1,9 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:web_app/features/auth/controllers/auth_controller.dart';
+import 'package:web_app/features/auth/model/users_data.dart';
+import 'package:web_app/features/auth/repo/auth_repo.dart';
 import 'package:web_app/features/chat/chat_controller.dart';
 import 'package:web_app/features/chat/model/message_model.dart';
+import 'package:web_app/features/chat/repo/chat_repo.dart';
 import 'package:web_app/router/route_names.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -15,6 +19,23 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController messageController = TextEditingController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getUsersData();
+  }
+
+  Future<void> getUsersData() async {
+    if (ref.read(userDataStateProvider) != null) return;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final UsersData usersData = await ref
+        .read(authRepoProvider)
+        .getUsersDataFromFirebase(uid: uid!);
+    ref.read(userDataStateProvider.notifier).update((state) => usersData);
+  }
+
   @override
   Widget build(BuildContext context) {
     final AsyncValue<List<MessageModel>> chatStream = ref.watch(
@@ -38,12 +59,49 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           chatStream.when(
             data: (data) {
               final messages = data;
-              return Expanded(
+              return SizedBox(
+                height: MediaQuery.of(context).size.height * 0.7,
                 child: ListView.builder(
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index];
-                    return Text(message.message);
+                    final isSentByCurrentUser = ref
+                        .read(chatRepoProvider)
+                        .isSentByCurrentUser(messageSenderId: message.senderId);
+                    return Row(
+                      mainAxisAlignment: isSentByCurrentUser
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.8,
+                          ),
+                          child: Card(
+                            color: isSentByCurrentUser
+                                ? Colors.green[200]
+                                : Colors.grey[200],
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    message.senderName ?? 'NA',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(message.message),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
                   },
                 ),
               );
@@ -89,7 +147,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       onPressed: () {
                         final message = messageController.text;
                         if (message.isEmpty) return;
-                        final senderId = ref.read(userDataStateProvider)!.uid!;
+                        final senderId = ref.read(userDataStateProvider)!.uid;
                         ref
                             .read(chatControllerProvider.notifier)
                             .sendMessage(message: message, senderId: senderId);

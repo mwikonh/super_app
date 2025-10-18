@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:web_app/features/home/models/home_model.dart';
+import 'package:web_app/router/route_names.dart';
 
 class HomeMenuWidget extends StatelessWidget {
   const HomeMenuWidget({super.key, required this.homeMenus});
@@ -10,7 +12,17 @@ class HomeMenuWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => context.push(homeMenus.routeName),
+      onTap: () {
+        if (homeMenus.routeName == RouteNames.login) {
+          if (FirebaseAuth.instance.currentUser != null) {
+            context.push(RouteNames.chat);
+          } else {
+            context.push(homeMenus.routeName);
+          }
+        } else {
+          context.push(homeMenus.routeName);
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           color: homeMenus.bgColour,
