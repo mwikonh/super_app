@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_app/features/home/models/home_model.dart';
 import 'package:web_app/features/home/widgets/home_menu_widget.dart';
+import 'package:web_app/features/notifications/notification_handler.dart';
 import 'package:web_app/router/route_names.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    ref.read(notificationHandlerRepoProvider).firebaseMessageHandler(context);
+  }
 
   final List<HomeModel> homeMenus = [
     HomeModel(

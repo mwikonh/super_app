@@ -71,6 +71,15 @@ class AuthRepo {
       throw Future.error(e);
     }
   }
+
+  Future<void> signOut() async {
+    try {
+      await _firebaseAuth.signOut();
+    } catch (e) {
+      log(e.toString());
+      throw Future.error(e);
+    }
+  }
 }
 
 final authRepoProvider = Provider((ref) => AuthRepo());
